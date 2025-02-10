@@ -20,6 +20,7 @@ or by passing options via the command line. Additional configurations, such as p
 project settings, can also be included.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		_ = models.GetProjectName()
+		_ = models.GetProjectType()
 	},
 }
 
