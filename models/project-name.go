@@ -34,12 +34,15 @@ func (m ProjectName) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter":
-			if !m.err {
-				return m, tea.Quit
-			}
+			// ✅ Return tea.Batch() to execute both quitting and starting the next model
+			return m, tea.Batch(tea.Quit, func() tea.Msg {
+				return StartProjectTypeSelectionMsg{}
+			})
 		case "backspace":
 			if len(m.name) > 0 {
 				m.name = m.name[:len(m.name)-1]
+			} else {
+				m.name = "project-name"
 			}
 		case "ctrl+c", "esc":
 			os.Exit(0)
@@ -68,15 +71,18 @@ func (m ProjectName) View() string {
 	} else if !m.err && !m.firstRender {
 		icon = validStyle.Render("✔")
 	}
-
-	s := fmt.Sprintf("%s Enter your project name: %s\n\n", icon, nameStyle.Render(m.name))
+	displayText := nameStyle.Render(m.name)
+	if m.firstRender || m.name == "" || m.name == "project-name" {
+		displayText = mutedStyle.Render("project-name")
+	}
+	s := fmt.Sprintf("%s Enter your project name: %s\n", icon, displayText)
 
 	if m.err {
 		icon = errorStyle.Render("!")
-		s += fmt.Sprintf("%s %s\n\n", icon, m.errMsg)
+		s += fmt.Sprintf("\n%s %s\n", icon, m.errMsg)
 	}
 
-	s += "Press Enter to confirm, Backspace to delete, ESC to quit."
+	s += "\nPress Enter to confirm, Backspace to delete, ESC to quit."
 
 	count += 1
 	return s
@@ -98,9 +104,6 @@ func GetProjectName() string {
 // Validate project name in real-time
 func validateProjectName(name string) (bool, string) {
 	name = strings.TrimSpace(name)
-	if name == "" {
-		return true, "Project name cannot be empty"
-	}
 	if len(name) < 3 {
 		return true, "Project name must be at least 3 characters long"
 	}

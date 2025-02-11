@@ -4,6 +4,9 @@ Copyright © 2025 Aditya Chaphekar
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/aditya-chaphekar/create-util/models"
 	"github.com/spf13/cobra"
 )
@@ -20,7 +23,12 @@ or by passing options via the command line. Additional configurations, such as p
 project settings, can also be included.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		_ = models.GetProjectName()
-		_ = models.GetProjectType()
+		selectedType, err := models.GetProjectType()
+		if err != nil {
+			fmt.Println("Failed to select project type:", err)
+			os.Exit(1)
+		}
+		fmt.Print("Selected project type:", selectedType)
 	},
 }
 
